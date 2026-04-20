@@ -1,43 +1,66 @@
-<script>
-  AFRAME.registerComponent('texture-switcher', {
-    tick: function () {
-      const anchor = document.querySelector('#anchor-marker');
-      const switcher = document.querySelector('#switcher-marker');
-      const model = document.querySelector('#my-model');
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script>
+      AFRAME.registerComponent('material-dial', {
+        tick: function () {
+          const anchor = document.querySelector('#marker-anchor');
+          const dial = document.querySelector('#marker-texture');
+          const stair = document.querySelector('#stair-model');
 
-      if (anchor.object3D.visible && switcher.object3D.visible) {
-        // Get rotation of the switcher marker
-        let rotY = THREE.MathUtils.radToDeg(switcher.object3D.rotation.y);
-        if (rotY < 0) rotY += 360;
+          if (anchor.object3D.visible && dial.object3D.visible && stair) {
+            // 1. Calculate Rotation of the Texture Marker
+            let rotY = THREE.MathUtils.radToDeg(dial.object3D.rotation.y);
+            if (rotY < 0) rotY += 360;
 
-        // SWAP LOGIC: 0-180 degrees is Wood, 180-360 is Steel
-        model.addEventListener('model-loaded', () => {
-          const mesh = model.getObject3D('mesh');
-          mesh.traverse((node) => {
-            if (node.isMesh) {
-              if (rotY < 180) {
-                node.material.color.set('#5C4033'); // Wood Brown
-                node.material.roughness = 0.8;
-              } else {
-                node.material.color.set('#A9A9A9'); // Steel Gray
-                node.material.metalness = 1.0;
-              }
+            // 2. Lock Stair Rotation (Standing up, but facing "forward")
+            // We lock X at 90 deg (1.57 rad) and Z at 0 to prevent flipping
+            stair.object3D.rotation.set(1.57, 0, 0);
+
+            // 3. Texture Swap Logic
+            const mesh = stair.getObject3D('mesh');
+            if (mesh) {
+              mesh.traverse((node) => {
+                if (node.isMesh) {
+                  node.material.transparent = true;
+                  // ZONE 1: Concrete/Stone (0-180 degrees)
+                  if (rotY < 180) {
+                    node.material.color.set('#888888');
+                    node.material.roughness = 0.9;
+                    node.material.metalness = 0.1;
+                  } 
+                  // ZONE 2: Metallic/Steel (180-360 degrees)
+                  else {
+                    node.material.color.set('#222222');
+                    node.material.roughness = 0.2;
+                    node.material.metalness = 1.0;
+                  }
+                }
+              });
             }
-          });
-        });
-      }
-    }
-  });
-</script>
+          }
+        }
+      });
+    </script>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" material-dial>
+      
+      <a-marker id="marker-anchor" type="pattern" url="pattern-connect.patt">
+        <a-entity id="stair-model" 
+                  gltf-model="url(stair.glb)" 
+                  scale="10 10 10"
+                  position="0 0 0">
+        </a-entity>
+      </a-marker>
 
-<a-scene embedded arjs="sourceType: webcam;" texture-switcher>
-  <a-marker id="anchor-marker" type="pattern" url="pattern-anchor.patt">
-    <a-entity id="my-model" gltf-model="url(model.glb)" scale="5 5 5"></a-entity>
-  </a-marker>
+      <a-marker id="marker-texture" type="pattern" url="pattern-texture.patt">
+        <a-torus radius="0.5" radius-tubular="0.05" color="#DB35CB" rotation="90 0 0"></a-torus>
+      </a-marker>
 
-  <a-marker id="switcher-marker" type="pattern" url="pattern-texture.patt">
-    <a-cylinder radius="0.5" height="0.1" color="#FFC107" opacity="0.5"></a-cylinder>
-  </a-marker>
-
-  <a-entity camera></a-entity>
-</a-scene>
+      <a-entity camera></a-entity>
+    </a-scene>
+  </body>
+</html>
