@@ -19,36 +19,25 @@
         mesh.traverse((node) => {
           if (node.isMesh) {
             node.material.transparent = true;
+            node.material.opacity = 0.9;
 
-            // --- THE HIGH-CONTRAST SWITCH ---
+            // --- DEEP PRIMARY COLORS (Anti-Glare) ---
             if (rotY >= 315 || rotY < 45) {
-              // FRONT: White Concrete (STARK WHITE)
-              node.material.color.set('#FFFFFF');
-              node.material.roughness = 1.0; 
-              node.material.metalness = 0.0;
-              node.material.opacity = 0.9;
+              node.material.color.set('#D32F2F'); // Deep Red
             } 
             else if (rotY >= 45 && rotY < 135) {
-              // RIGHT: Dark Chrome (VERY SHINY)
-              node.material.color.set('#111111');
-              node.material.roughness = 0.1;
-              node.material.metalness = 1.0;
-              node.material.opacity = 1.0;
+              node.material.color.set('#1976D2'); // Deep Blue
             } 
             else if (rotY >= 135 && rotY < 225) {
-              // BACK: Cyan Glass (SEE-THROUGH)
-              node.material.color.set('#35DBDB');
-              node.material.roughness = 0.0;
-              node.material.metalness = 0.0;
-              node.material.opacity = 0.3; // Very translucent
+              node.material.color.set('#388E3C'); // Deep Green (Replaces Cyan)
             } 
             else if (rotY >= 225 && rotY < 315) {
-              // LEFT: Signature Pink
-              node.material.color.set('#DB35CB');
-              node.material.roughness = 0.5;
-              node.material.metalness = 0.3;
-              node.material.opacity = 0.8;
+              node.material.color.set('#FBC02D'); // Amber Yellow
             }
+            
+            // Keep the shading consistent
+            node.material.roughness = 0.5;
+            node.material.metalness = 0.2;
           }
         });
       }
