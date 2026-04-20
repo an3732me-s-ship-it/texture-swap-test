@@ -5,6 +5,7 @@
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
     <script>
+      // Handles color, transparency, and shading for .glb models
       AFRAME.registerComponent('architect-filters', {
         schema: {
           color: {type: 'color', default: '#ffffff'},
@@ -26,58 +27,23 @@
           });
         }
       });
-
-      AFRAME.registerComponent('material-swapper', {
-        tick: function () {
-          const anchor = document.querySelector('#anchorMarker');
-          const dial = document.querySelector('#dialMarker');
-          const stair = document.querySelector('#stairModel');
-
-          if (anchor && dial && anchor.object3D.visible && dial.object3D.visible) {
-            // Calculate rotation (0-360)
-            let rotY = THREE.MathUtils.radToDeg(dial.object3D.rotation.y);
-            if (rotY < 0) rotY += 360;
-
-            const mesh = stair.getObject3D('mesh');
-            if (mesh) {
-              mesh.traverse((node) => {
-                if (node.isMesh) {
-                  // ZONE 1: Pink (0-180 degrees)
-                  if (rotY < 180) {
-                    node.material.color.set('#DB35CB'); 
-                    node.material.metalness = 0.1;
-                  } 
-                  // ZONE 2: Blue (180-360 degrees)
-                  else {
-                    node.material.color.set('#355EDB');
-                    node.material.metalness = 0.8;
-                  }
-                }
-              });
-            }
-          }
-        }
-      });
     </script>
   </head>
 
   <body style="margin: 0px; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" material-swapper>
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; smooth: true; smoothCount: 10; patternRatio: 0.7;">
       
-      <a-entity light="type: ambient; intensity: 0.7;"></a-entity>
+      <a-entity light="type: ambient; intensity: 0.7; color: #ffffff;"></a-entity>
       <a-entity light="type: directional; intensity: 1.0;" position="1 4 2"></a-entity>
 
-      <a-marker id="anchorMarker" type="pattern" url="pattern-connect.patt">
-        <a-entity id="stairModel"
-                  gltf-model="url(stair.glb)" 
+      
+      <a-marker type="pattern" url="https://raw.githubusercontent.com/an3732me-s-ship-it/texture-swap-test/refs/heads/main/pattern-connect.patt">
+        <a-entity gltf-model="url(https://raw.githubusercontent.com/an3732me-s-ship-it/texture-swap-test/refs/heads/main/stair.glb)" 
                   scale="12 12 12" 
                   position="0 0 0" 
                   architect-filters="color: #DB35CB; opacity: 0.8"></a-entity>
       </a-marker>
 
-      <a-marker id="dialMarker" type="pattern" url="pattern-texture.patt">
-        <a-torus radius="0.5" radius-tubular="0.02" color="#FFFFFF" rotation="90 0 0" opacity="0.5"></a-torus>
-      </a-marker>
 
       <a-entity camera></a-entity>
     </a-scene>
