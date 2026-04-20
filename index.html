@@ -3,25 +3,56 @@
   <head>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <script>
+      AFRAME.registerComponent('material-dial', {
+        tick: function () {
+          const stair = document.querySelector('#stairModel');
+          const dialMarker = document.querySelector('#marker-texture');
+
+          // Check if the texture marker is visible
+          if (dialMarker && dialMarker.object3D.visible && stair) {
+            
+            // Get rotation of the texture marker (0-360)
+            let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
+            if (rotY < 0) rotY += 360;
+
+            const mesh = stair.getObject3D('mesh');
+            if (mesh) {
+              mesh.traverse((node) => {
+                if (node.isMesh) {
+                  // If rotation is less than 180, make it PINK
+                  if (rotY < 180) {
+                    node.material.color.set('#DB35CB');
+                  } 
+                  // If rotation is more than 180, make it BLUE
+                  else {
+                    node.material.color.set('#355EDB');
+                  }
+                }
+              });
+            }
+          }
+        }
+      });
+    </script>
   </head>
 
   <body style="margin: 0px; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; patternRatio: 0.7;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; patternRatio: 0.7;" material-dial>
       
       <a-entity light="type: ambient; intensity: 1.0;"></a-entity>
 
       <a-marker type="pattern" url="pattern-connect.patt">
-        
-        <a-box position="0 0.5 0" 
-               material="color: red; opacity: 0.7" 
-               scale="0.5 0.5 0.5">
-        </a-box>
-
-        <a-entity gltf-model="url(stair.glb)" 
+        <a-entity id="stairModel" 
+                  gltf-model="url(stair.glb)" 
                   scale="12 12 12" 
                   position="0 0 0">
         </a-entity>
-        
+      </a-marker>
+
+      <a-marker id="marker-texture" type="pattern" url="pattern-texture.patt">
+        <a-torus radius="0.5" radius-tubular="0.02" color="white" rotation="90 0 0" opacity="0.5"></a-torus>
       </a-marker>
 
       <a-entity camera></a-entity>
