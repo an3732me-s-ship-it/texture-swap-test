@@ -1,4 +1,11 @@
-AFRAME.registerComponent('material-dial', {
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <script>
+   AFRAME.registerComponent('material-dial', {
   tick: function () {
     const stair = document.querySelector('#stairModel');
     const dialMarker = document.querySelector('#marker-texture');
@@ -49,3 +56,28 @@ AFRAME.registerComponent('material-dial', {
     }
   }
 });
+    </script>
+  </head>
+
+  <body style="margin: 0px; overflow: hidden;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; patternRatio: 0.7;" material-dial>
+      
+      <a-entity light="type: ambient; intensity: 0.6;"></a-entity>
+      <a-entity light="type: directional; intensity: 0.8;" position="1 4 2"></a-entity>
+
+      <a-marker type="pattern" url="pattern-connect.patt">
+        <a-entity id="stairModel" 
+                  gltf-model="url(stair.glb)" 
+                  scale="12 12 12" 
+                  position="0 0 0">
+        </a-entity>
+      </a-marker>
+
+      <a-marker id="marker-texture" type="pattern" url="pattern-texture.patt">
+        <a-torus radius="0.5" radius-tubular="0.01" color="white" rotation="90 0 0" opacity="0.3"></a-torus>
+      </a-marker>
+
+      <a-entity camera></a-entity>
+    </a-scene>
+  </body>
+</html>
