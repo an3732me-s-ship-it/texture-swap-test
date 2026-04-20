@@ -11,9 +11,19 @@
     const dialMarker = document.querySelector('#marker-texture');
 
     if (dialMarker && dialMarker.object3D.visible && stair) {
-      // 1. Get and Normalize Rotation
-      let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
-      let angle = ((rotY % 360) + 360) % 360;
+      // 1. Get the rotation from the matrix to avoid 'flipping' bugs
+      const matrix = dialMarker.object3D.matrixWorld;
+      const vector = new THREE.Vector3();
+      const quaternion = new THREE.Quaternion();
+      const scale = new THREE.Vector3();
+      matrix.decompose(vector, quaternion, scale);
+
+      // 2. Convert to Euler and get a clean Y rotation
+      const rotation = new THREE.Euler().setFromQuaternion(quaternion);
+      let angle = THREE.MathUtils.radToDeg(rotation.y);
+      
+      // 3. Normalize to a perfect 0-360 range
+      angle = ((angle % 360) + 360) % 360;
 
       const mesh = stair.getObject3D('mesh');
       if (mesh) {
@@ -22,24 +32,19 @@
             node.material.transparent = true;
             node.material.opacity = 0.9;
 
-            // 2. WIDE ZONE LOGIC (120 degrees each)
-            if (angle >= 300 || angle < 60) {
-              // ZONE: WHITE
-              node.material.color.set('#FFFFFF');
-              node.material.roughness = 1.0;
+            // 4. THE 4-WAY SNAP
+            if (angle >= 315 || angle < 45) {
+              node.material.color.set('#FFFFFF'); // White
             } 
-            else if (angle >= 60 && angle < 180) {
-              // ZONE: BLUE
-              node.material.color.set('#1976D2');
-              node.material.roughness = 0.3;
+            else if (angle >= 45 && angle < 135) {
+              node.material.color.set('#1976D2'); // Blue
+            } 
+            else if (angle >= 135 && angle < 225) {
+              node.material.color.set('#FF00FF'); // Pink (Pure Magenta)
             } 
             else {
-              // ZONE: PINK (This now covers 180 to 300)
-              node.material.color.set('#FF00FF'); // Using Pure Magenta for maximum "pop"
-              node.material.roughness = 0.5;
+              node.material.color.set('#444444'); // Grey
             }
-            
-            // Force the material to refresh in the GPU
             node.material.needsUpdate = true;
           }
         });
