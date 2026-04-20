@@ -3,43 +3,37 @@
   <head>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <style>
-      /* Screen HUD Styling */
-      #debug-ui {
-        position: absolute; top: 10px; left: 10px; 
-        background: rgba(0,0,0,0.7); color: white;
-        padding: 10px; font-family: monospace; z-index: 10;
-      }
-    </style>
-  </head>
-
-  <body style="margin: 0px; overflow: hidden;">
-    <div id="debug-ui">Angle: <span id="angle-val">0</span>°</div>
 
     <script>
-      AFRAME.registerComponent('dial-viz', {
+      AFRAME.registerComponent('master-controller', {
         tick: function () {
-          const dialMarker = document.querySelector('#marker-flow');
-          const debugText = document.querySelector('#angle-val');
+          const dial = document.querySelector('#marker-dial');
           const stair = document.querySelector('#stairModel');
+          const indicator = document.querySelector('#status-sphere');
 
-          if (dialMarker && dialMarker.object3D.visible) {
-            // 1. Calculate Angle
-            let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
+          if (dial && dial.object3D.visible && stair) {
+            // 1. Get rotation and normalize to 0-360
+            let rotY = THREE.MathUtils.radToDeg(dial.object3D.rotation.y);
             let angle = ((rotY % 360) + 360) % 360;
 
-            // 2. Update the Screen HUD
-            debugText.innerText = Math.floor(angle);
-
-            // 3. Update the Stair Color (Same logic as before)
             const mesh = stair.getObject3D('mesh');
+            
+            // We'll define the colors here to keep it clean
+            let activeColor;
+            if (angle >= 315 || angle < 45) activeColor = '#FFFFFF';      // White
+            else if (angle >= 45 && angle < 135) activeColor = '#1976D2'; // Blue
+            else if (angle >= 135 && angle < 225) activeColor = '#FF00FF'; // Pink
+            else activeColor = '#444444';                                 // Grey
+
+            // Update the status sphere on the marker itself
+            if (indicator) indicator.setAttribute('color', activeColor);
+
+            // Update the Stair Model
             if (mesh) {
               mesh.traverse((node) => {
                 if (node.isMesh) {
-                  if (angle >= 315 || angle < 45) node.material.color.set('#FFFFFF'); // White
-                  else if (angle >= 45 && angle < 135) node.material.color.set('#1976D2'); // Blue
-                  else if (angle >= 135 && angle < 225) node.material.color.set('#FF00FF'); // Pink
-                  else node.material.color.set('#444444'); // Grey
+                  node.material.color.set(activeColor);
+                  node.material.needsUpdate = true;
                 }
               });
             }
@@ -47,15 +41,25 @@
         }
       });
     </script>
+  </head>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; patternRatio: 0.7;" dial-viz>
+  <body style="margin: 0px; overflow: hidden;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; patternRatio: 0.7;" master-controller>
       
+      <a-entity light="type: ambient; intensity: 0.7;"></a-entity>
+      <a-entity light="type: directional; intensity: 0.8;" position="1 4 2"></a-entity>
+
       <a-marker type="pattern" url="pattern-connect.patt">
-        <a-entity id="stairModel" gltf-model="url(stair.glb)" scale="12 12 12"></a-entity>
+        <a-entity id="stairModel" 
+                  gltf-model="url(stair.glb)" 
+                  scale="12 12 12" 
+                  position="0 0 0">
+        </a-entity>
       </a-marker>
 
-      <a-marker id="marker-textswap" type="pattern" url="pattern-textswap.patt">
-        <a-torus radius="0.5" radius-tubular="0.01" color="white" rotation="90 0 0"></a-torus>
+      <a-marker id="marker-dial" type="pattern" url="pattern-textswap.patt">
+        <a-sphere id="status-sphere" radius="0.1" position="0 0.2 0" color="white"></a-sphere>
+        <a-torus radius="0.5" radius-tubular="0.01" color="white" rotation="90 0 0" opacity="0.5"></a-torus>
         <a-box position="0 0 -0.6" scale="0.1 0.05 0.4" color="red"></a-box>
       </a-marker>
 
