@@ -1,0 +1,43 @@
+<script>
+  AFRAME.registerComponent('texture-switcher', {
+    tick: function () {
+      const anchor = document.querySelector('#anchor-marker');
+      const switcher = document.querySelector('#switcher-marker');
+      const model = document.querySelector('#my-model');
+
+      if (anchor.object3D.visible && switcher.object3D.visible) {
+        // Get rotation of the switcher marker
+        let rotY = THREE.MathUtils.radToDeg(switcher.object3D.rotation.y);
+        if (rotY < 0) rotY += 360;
+
+        // SWAP LOGIC: 0-180 degrees is Wood, 180-360 is Steel
+        model.addEventListener('model-loaded', () => {
+          const mesh = model.getObject3D('mesh');
+          mesh.traverse((node) => {
+            if (node.isMesh) {
+              if (rotY < 180) {
+                node.material.color.set('#5C4033'); // Wood Brown
+                node.material.roughness = 0.8;
+              } else {
+                node.material.color.set('#A9A9A9'); // Steel Gray
+                node.material.metalness = 1.0;
+              }
+            }
+          });
+        });
+      }
+    }
+  });
+</script>
+
+<a-scene embedded arjs="sourceType: webcam;" texture-switcher>
+  <a-marker id="anchor-marker" type="pattern" url="pattern-anchor.patt">
+    <a-entity id="my-model" gltf-model="url(model.glb)" scale="5 5 5"></a-entity>
+  </a-marker>
+
+  <a-marker id="switcher-marker" type="pattern" url="pattern-texture.patt">
+    <a-cylinder radius="0.5" height="0.1" color="#FFC107" opacity="0.5"></a-cylinder>
+  </a-marker>
+
+  <a-entity camera></a-entity>
+</a-scene>
