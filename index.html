@@ -11,35 +11,32 @@
     const dialMarker = document.querySelector('#marker-texture');
 
     if (dialMarker && dialMarker.object3D.visible && stair) {
+      // 1. Get the Raw Rotation
       let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
-      if (rotY < 0) rotY += 360;
+      
+      // 2. Normalize to a clean 0-360 range
+      let angle = ((rotY % 360) + 360) % 360;
+
+      // DEBUG: This helps you see the actual number in your browser inspector
+      // console.log("Current Angle:", angle);
 
       const mesh = stair.getObject3D('mesh');
       if (mesh) {
         mesh.traverse((node) => {
           if (node.isMesh) {
-            node.material.transparent = true;
-            node.material.opacity = 0.9;
-
-            // --- DEEP PRIMARY COLORS (Anti-Glare) ---
-            if (rotY >= 315 || rotY < 45) {
-              node.material.color.set('#808080'); // Deep Red
+            // 3. Precise Quadrants (45 degree offsets)
+            if (angle >= 315 || angle < 45) {
+              node.material.color.set('#D32F2F'); // RED (Front)
             } 
-            else if (rotY >= 45 && rotY < 135) {
-              node.material.color.set('#1976D2'); // Deep Blue
+            else if (angle >= 45 && angle < 135) {
+              node.material.color.set('#1976D2'); // BLUE (Right)
             } 
-            else if (rotY >= 135 && rotY < 225) {
-              node.material.color.set('#DB35CB'); 
-              node.material.roughness = 0.8; // Make it matte to reduce white reflections
-              node.material.metalness = 0.0;
+            else if (angle >= 135 && angle < 225) {
+              node.material.color.set('#1B5E20'); // GREEN (Back)
             } 
-            else if (rotY >= 225 && rotY < 315) {
-              node.material.color.set('#FBC02D'); // Amber Yellow
+            else {
+              node.material.color.set('#808080'); // GREY (Left - Replaced Yellow)
             }
-            
-            // Keep the shading consistent
-            node.material.roughness = 0.5;
-            node.material.metalness = 0.2;
           }
         });
       }
