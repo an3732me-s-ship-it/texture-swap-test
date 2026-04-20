@@ -5,41 +5,35 @@
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
     <script>
-      AFRAME.registerComponent('three-color-dial', {
-        tick: function () {
-          const dial = document.querySelector('#marker-dial');
-          const stair = document.querySelector('#stairModel');
+      AFRAME.registerComponent('four-color-master', {
+  tick: function () {
+    const dial = document.querySelector('#marker-dial');
+    const stair = document.querySelector('#stairModel');
 
-          if (dial && dial.object3D.visible && stair) {
-            // 1. Get rotation and normalize to 0-360
-            let rotY = THREE.MathUtils.radToDeg(dial.object3D.rotation.y);
-            let angle = ((rotY % 360) + 360) % 360;
+    if (dial && dial.object3D.visible && stair) {
+      // 1. Get the direction the marker is 'facing' in the scene
+      var vector = new THREE.Vector3( 0, 0, 1 );
+      vector.applyQuaternion( dial.object3D.quaternion );
+      
+      // 2. Convert that direction into a 360 degree angle
+      let angle = Math.atan2(vector.x, vector.z) * (180 / Math.PI);
+      angle = (angle + 360) % 360;
 
-            const mesh = stair.getObject3D('mesh');
-            if (mesh) {
-              mesh.traverse((node) => {
-                if (node.isMesh) {
-                  // 2. Three large 120-degree zones
-                  if (angle >= 300 || angle < 60) {
-                    // ZONE 1: WHITE (Front)
-                    node.material.color.set('#FFFFFF');
-                  } 
-                  else if (angle >= 60 && angle < 180) {
-                    // ZONE 2: BLUE (Right-ish)
-                    node.material.color.set('#1976D2');
-                  } 
-                  else {
-                    // ZONE 3: PINK (Left-ish/Back)
-                    // This covers 180 to 300 degrees
-                    node.material.color.set('#FF00FF');
-                  }
-                  node.material.needsUpdate = true;
-                }
-              });
-            }
+      const mesh = stair.getObject3D('mesh');
+      if (mesh) {
+        mesh.traverse((node) => {
+          if (node.isMesh) {
+            // 3. 90-degree slices with NO 'White' gap
+            if (angle >= 315 || angle < 45) node.material.color.set('#FFFFFF'); // White
+            else if (angle >= 45 && angle < 135) node.material.color.set('#1976D2'); // Blue
+            else if (angle >= 135 && angle < 225) node.material.color.set('#FF00FF'); // Pink
+            else node.material.color.set('#444444'); // Grey
           }
-        }
-      });
+        });
+      }
+    }
+  }
+});
     </script>
   </head>
 
