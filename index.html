@@ -1,66 +1,51 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+AFRAME.registerComponent('material-dial', {
+  tick: function () {
+    const stair = document.querySelector('#stairModel');
+    const dialMarker = document.querySelector('#marker-texture');
 
-    <script>
-      AFRAME.registerComponent('material-dial', {
-        tick: function () {
-          const stair = document.querySelector('#stairModel');
-          const dialMarker = document.querySelector('#marker-texture');
+    if (dialMarker && dialMarker.object3D.visible && stair) {
+      // 1. Get rotation and normalize to 0-360
+      let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
+      if (rotY < 0) rotY += 360;
 
-          if (dialMarker && dialMarker.object3D.visible && stair) {
-            let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
-            if (rotY < 0) rotY += 360;
+      const mesh = stair.getObject3D('mesh');
+      if (mesh) {
+        mesh.traverse((node) => {
+          if (node.isMesh) {
+            node.material.transparent = true;
 
-            const mesh = stair.getObject3D('mesh');
-            if (mesh) {
-              mesh.traverse((node) => {
-                if (node.isMesh) {
-                  node.material.transparent = true;
-                  node.material.opacity = 0.8;
-
-                  // --- SHADING LOGIC ---
-                  if (rotY < 180) {
-                    // Concrete/Soft Material Look
-                    node.material.color.set('#DB35CB');
-                    node.material.roughness = 0.7; // Not very shiny
-                    node.material.metalness = 0.2; // Not metallic
-                  } else {
-                    // Polished/Metallic Look
-                    node.material.color.set('#355EDB');
-                    node.material.roughness = 0.2; // Very smooth/shiny
-                    node.material.metalness = 0.8; // High metallic reflection
-                  }
-                }
-              });
+            // 2. The Four-Way Switch
+            if (rotY >= 315 || rotY < 45) {
+              // FRONT: Pink / Concrete
+              node.material.color.set('#DB35CB');
+              node.material.roughness = 0.8;
+              node.material.metalness = 0.1;
+              node.material.opacity = 0.8;
+            } 
+            else if (rotY >= 45 && rotY < 135) {
+              // RIGHT: Blue / Steel
+              node.material.color.set('#355EDB');
+              node.material.roughness = 0.2;
+              node.material.metalness = 0.9;
+              node.material.opacity = 0.8;
+            } 
+            else if (rotY >= 135 && rotY < 225) {
+              // BACK: Cyan / Glass
+              node.material.color.set('#35DBDB');
+              node.material.roughness = 0.1;
+              node.material.metalness = 0.1;
+              node.material.opacity = 0.4; // More transparent
+            } 
+            else if (rotY >= 225 && rotY < 315) {
+              // LEFT: Gold / Wood
+              node.material.color.set('#DBA935');
+              node.material.roughness = 0.6;
+              node.material.metalness = 0.3;
+              node.material.opacity = 0.8;
             }
           }
-        }
-      });
-    </script>
-  </head>
-
-  <body style="margin: 0px; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; patternRatio: 0.7;" material-dial>
-      
-      <a-entity light="type: ambient; intensity: 0.6;"></a-entity>
-      <a-entity light="type: directional; intensity: 0.8;" position="1 4 2"></a-entity>
-
-      <a-marker type="pattern" url="pattern-connect.patt">
-        <a-entity id="stairModel" 
-                  gltf-model="url(stair.glb)" 
-                  scale="12 12 12" 
-                  position="0 0 0">
-        </a-entity>
-      </a-marker>
-
-      <a-marker id="marker-texture" type="pattern" url="pattern-texture.patt">
-        <a-torus radius="0.5" radius-tubular="0.01" color="white" rotation="90 0 0" opacity="0.3"></a-torus>
-      </a-marker>
-
-      <a-entity camera></a-entity>
-    </a-scene>
-  </body>
-</html>
+        });
+      }
+    }
+  }
+});
