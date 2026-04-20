@@ -5,53 +5,50 @@
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
     <script>
-   AFRAME.registerComponent('material-dial', {
-  tick: function () {
-    const stair = document.querySelector('#stairModel');
-    const dialMarker = document.querySelector('#marker-texture');
+      AFRAME.registerComponent('material-dial', {
+        tick: function () {
+          const stair = document.querySelector('#stairModel');
+          const dialMarker = document.querySelector('#marker-flow'); // Updated ID
 
-    if (dialMarker && dialMarker.object3D.visible && stair) {
-      // 1. Get the rotation from the matrix to avoid 'flipping' bugs
-      const matrix = dialMarker.object3D.matrixWorld;
-      const vector = new THREE.Vector3();
-      const quaternion = new THREE.Quaternion();
-      const scale = new THREE.Vector3();
-      matrix.decompose(vector, quaternion, scale);
+          if (dialMarker && dialMarker.object3D.visible && stair) {
+            // 1. Get stable rotation
+            let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
+            
+            // 2. Normalize to a perfect 0-360 range
+            let angle = ((rotY % 360) + 360) % 360;
 
-      // 2. Convert to Euler and get a clean Y rotation
-      const rotation = new THREE.Euler().setFromQuaternion(quaternion);
-      let angle = THREE.MathUtils.radToDeg(rotation.y);
-      
-      // 3. Normalize to a perfect 0-360 range
-      angle = ((angle % 360) + 360) % 360;
+            const mesh = stair.getObject3D('mesh');
+            if (mesh) {
+              mesh.traverse((node) => {
+                if (node.isMesh) {
+                  node.material.transparent = true;
+                  node.material.opacity = 0.9;
 
-      const mesh = stair.getObject3D('mesh');
-      if (mesh) {
-        mesh.traverse((node) => {
-          if (node.isMesh) {
-            node.material.transparent = true;
-            node.material.opacity = 0.9;
-
-            // 4. THE 4-WAY SNAP
-            if (angle >= 315 || angle < 45) {
-              node.material.color.set('#FFFFFF'); // White
-            } 
-            else if (angle >= 45 && angle < 135) {
-              node.material.color.set('#1976D2'); // Blue
-            } 
-            else if (angle >= 135 && angle < 225) {
-              node.material.color.set('#FF00FF'); // Pink (Pure Magenta)
-            } 
-            else {
-              node.material.color.set('#444444'); // Grey
+                  // 3. THE 4-WAY SWITCH
+                  // We use 90 degree "slices"
+                  if (angle >= 315 || angle < 45) {
+                    node.material.color.set('#FFFFFF'); // WHITE (Front)
+                  } 
+                  else if (angle >= 45 && angle < 135) {
+                    node.material.color.set('#1976D2'); // BLUE (Right)
+                  } 
+                  else if (angle >= 135 && angle < 225) {
+                    node.material.color.set('#FF00FF'); // PINK (Back)
+                  } 
+                  else if (angle >= 225 && angle < 315) {
+                    node.material.color.set('#444444'); // GREY (Left)
+                  }
+                  
+                  // Restore that architectural shading
+                  node.material.roughness = 0.5;
+                  node.material.metalness = 0.3;
+                  node.material.needsUpdate = true;
+                }
+              });
             }
-            node.material.needsUpdate = true;
           }
-        });
-      }
-    }
-  }
-});
+        }
+      });
     </script>
   </head>
 
@@ -69,7 +66,7 @@
         </a-entity>
       </a-marker>
 
-      <a-marker id="marker-texture" type="pattern" url="pattern-texture.patt">
+      <a-marker id="marker-flow" type="pattern" url="pattern-flow.patt">
         <a-torus radius="0.5" radius-tubular="0.01" color="white" rotation="90 0 0" opacity="0.3"></a-torus>
       </a-marker>
 
