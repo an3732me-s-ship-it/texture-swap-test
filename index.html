@@ -11,7 +11,7 @@
     const dialMarker = document.querySelector('#marker-texture');
 
     if (dialMarker && dialMarker.object3D.visible && stair) {
-      // Normalize rotation to 0-360
+      // 1. Get and Normalize Rotation
       let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
       let angle = ((rotY % 360) + 360) % 360;
 
@@ -22,27 +22,25 @@
             node.material.transparent = true;
             node.material.opacity = 0.9;
 
-            // --- 4-ZONE HIGH CONTRAST SWITCH ---
-            if (angle >= 315 || angle < 45) {
-              // 0 deg: WHITE
+            // 2. WIDE ZONE LOGIC (120 degrees each)
+            if (angle >= 300 || angle < 60) {
+              // ZONE: WHITE
               node.material.color.set('#FFFFFF');
-              node.material.roughness = 1.0; 
+              node.material.roughness = 1.0;
             } 
-            else if (angle >= 45 && angle < 135) {
-              // 90 deg: BLUE
+            else if (angle >= 60 && angle < 180) {
+              // ZONE: BLUE
               node.material.color.set('#1976D2');
               node.material.roughness = 0.3;
             } 
-            else if (angle >= 135 && angle < 225) {
-              // 180 deg: PINK
-              node.material.color.set('#DB35CB');
-              node.material.roughness = 0.5;
-            } 
             else {
-              // 270 deg: DARK GREY
-              node.material.color.set('#444444');
-              node.material.roughness = 0.8;
+              // ZONE: PINK (This now covers 180 to 300)
+              node.material.color.set('#FF00FF'); // Using Pure Magenta for maximum "pop"
+              node.material.roughness = 0.5;
             }
+            
+            // Force the material to refresh in the GPU
+            node.material.needsUpdate = true;
           }
         });
       }
