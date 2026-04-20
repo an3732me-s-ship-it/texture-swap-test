@@ -11,31 +11,37 @@
     const dialMarker = document.querySelector('#marker-texture');
 
     if (dialMarker && dialMarker.object3D.visible && stair) {
-      // 1. Get the Raw Rotation
+      // Normalize rotation to 0-360
       let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
-      
-      // 2. Normalize to a clean 0-360 range
       let angle = ((rotY % 360) + 360) % 360;
-
-      // DEBUG: This helps you see the actual number in your browser inspector
-      // console.log("Current Angle:", angle);
 
       const mesh = stair.getObject3D('mesh');
       if (mesh) {
         mesh.traverse((node) => {
           if (node.isMesh) {
-            // 3. Precise Quadrants (45 degree offsets)
+            node.material.transparent = true;
+            node.material.opacity = 0.9;
+
+            // --- 4-ZONE HIGH CONTRAST SWITCH ---
             if (angle >= 315 || angle < 45) {
-              node.material.color.set('#D32F2F'); // RED (Front)
+              // 0 deg: WHITE
+              node.material.color.set('#FFFFFF');
+              node.material.roughness = 1.0; 
             } 
             else if (angle >= 45 && angle < 135) {
-              node.material.color.set('#1976D2'); // BLUE (Right)
+              // 90 deg: BLUE
+              node.material.color.set('#1976D2');
+              node.material.roughness = 0.3;
             } 
             else if (angle >= 135 && angle < 225) {
-              node.material.color.set('#1B5E20'); // GREEN (Back)
+              // 180 deg: PINK
+              node.material.color.set('#DB35CB');
+              node.material.roughness = 0.5;
             } 
             else {
-              node.material.color.set('#808080'); // GREY (Left - Replaced Yellow)
+              // 270 deg: DARK GREY
+              node.material.color.set('#444444');
+              node.material.roughness = 0.8;
             }
           }
         });
