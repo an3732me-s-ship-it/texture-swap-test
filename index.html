@@ -13,14 +13,23 @@
 
     if (dial && dial.object3D.visible && anchor && anchor.object3D.visible && stair) {
       
-      // Calculate the physical distance between the two markers
+      // Calculate distance in AR units
       const dist = dial.object3D.position.distanceTo(anchor.object3D.position);
 
+      // DEBUG: Un-comment the line below to see the numbers in your laptop console
+      // console.log("Current Distance:", dist);
+
       let activeColor;
-      if (dist > 4) activeColor = '#FFFFFF';      // Very Far: White
-      else if (dist > 2.5) activeColor = '#1976D2'; // Far: Blue
-      else if (dist > 1.2) activeColor = '#FF00FF'; // Near: Pink
-      else activeColor = '#444444';                // Touching: Grey
+      // Recalibrated for 5x5cm markers
+      if (dist > 2.5) {
+        activeColor = '#FFFFFF';      // FAR (More than 12cm away)
+      } else if (dist > 1.5) {
+        activeColor = '#1976D2'; // MID-FAR (Approx 7-12cm)
+      } else if (dist > 0.8) {
+        activeColor = '#FF00FF'; // NEAR (Approx 4-7cm)
+      } else {
+        activeColor = '#444444'; // TOUCHING / VERY CLOSE
+      }
 
       const mesh = stair.getObject3D('mesh');
       if (mesh) {
