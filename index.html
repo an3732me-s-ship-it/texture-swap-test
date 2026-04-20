@@ -10,10 +10,7 @@
           const stair = document.querySelector('#stairModel');
           const dialMarker = document.querySelector('#marker-texture');
 
-          // Check if the texture marker is visible
           if (dialMarker && dialMarker.object3D.visible && stair) {
-            
-            // Get rotation of the texture marker (0-360)
             let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
             if (rotY < 0) rotY += 360;
 
@@ -21,13 +18,20 @@
             if (mesh) {
               mesh.traverse((node) => {
                 if (node.isMesh) {
-                  // If rotation is less than 180, make it PINK
+                  node.material.transparent = true;
+                  node.material.opacity = 0.8;
+
+                  // --- SHADING LOGIC ---
                   if (rotY < 180) {
+                    // Concrete/Soft Material Look
                     node.material.color.set('#DB35CB');
-                  } 
-                  // If rotation is more than 180, make it BLUE
-                  else {
+                    node.material.roughness = 0.7; // Not very shiny
+                    node.material.metalness = 0.2; // Not metallic
+                  } else {
+                    // Polished/Metallic Look
                     node.material.color.set('#355EDB');
+                    node.material.roughness = 0.2; // Very smooth/shiny
+                    node.material.metalness = 0.8; // High metallic reflection
                   }
                 }
               });
@@ -41,7 +45,8 @@
   <body style="margin: 0px; overflow: hidden;">
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; patternRatio: 0.7;" material-dial>
       
-      <a-entity light="type: ambient; intensity: 1.0;"></a-entity>
+      <a-entity light="type: ambient; intensity: 0.6;"></a-entity>
+      <a-entity light="type: directional; intensity: 0.8;" position="1 4 2"></a-entity>
 
       <a-marker type="pattern" url="pattern-connect.patt">
         <a-entity id="stairModel" 
@@ -52,7 +57,7 @@
       </a-marker>
 
       <a-marker id="marker-texture" type="pattern" url="pattern-texture.patt">
-        <a-torus radius="0.5" radius-tubular="0.02" color="white" rotation="90 0 0" opacity="0.5"></a-torus>
+        <a-torus radius="0.5" radius-tubular="0.01" color="white" rotation="90 0 0" opacity="0.3"></a-torus>
       </a-marker>
 
       <a-entity camera></a-entity>
