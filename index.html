@@ -3,19 +3,80 @@
   <head>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <script>
+      AFRAME.registerComponent('architect-filters', {
+        schema: {
+          color: {type: 'color', default: '#ffffff'},
+          opacity: {type: 'number', default: 1.0}
+        },
+        init: function () {
+          this.el.addEventListener('model-loaded', () => {
+            const mesh = this.el.getObject3D('mesh');
+            if (!mesh) return;
+            mesh.traverse((node) => {
+              if (node.isMesh) {
+                node.material.transparent = true;
+                node.material.opacity = this.data.opacity;
+                node.material.color.set(this.data.color);
+                node.material.roughness = 0.7; 
+                node.material.metalness = 0.2;
+              }
+            });
+          });
+        }
+      });
+
+      AFRAME.registerComponent('material-swapper', {
+        tick: function () {
+          const anchor = document.querySelector('#anchorMarker');
+          const dial = document.querySelector('#dialMarker');
+          const stair = document.querySelector('#stairModel');
+
+          if (anchor && dial && anchor.object3D.visible && dial.object3D.visible) {
+            // Calculate rotation (0-360)
+            let rotY = THREE.MathUtils.radToDeg(dial.object3D.rotation.y);
+            if (rotY < 0) rotY += 360;
+
+            const mesh = stair.getObject3D('mesh');
+            if (mesh) {
+              mesh.traverse((node) => {
+                if (node.isMesh) {
+                  // ZONE 1: Pink (0-180 degrees)
+                  if (rotY < 180) {
+                    node.material.color.set('#DB35CB'); 
+                    node.material.metalness = 0.1;
+                  } 
+                  // ZONE 2: Blue (180-360 degrees)
+                  else {
+                    node.material.color.set('#355EDB');
+                    node.material.metalness = 0.8;
+                  }
+                }
+              });
+            }
+          }
+        }
+      });
+    </script>
   </head>
-  <body style="margin: 0; overflow: hidden;">
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: true;">
+
+  <body style="margin: 0px; overflow: hidden;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" material-swapper>
       
-      <a-marker id="marker-anchor" type="pattern" url="pattern-connect.patt">
-        <a-box position="0 0.5 0" material="color: red; opacity: 0.5"></a-box>
-        
-        <a-entity id="stair-model" 
+      <a-entity light="type: ambient; intensity: 0.7;"></a-entity>
+      <a-entity light="type: directional; intensity: 1.0;" position="1 4 2"></a-entity>
+
+      <a-marker id="anchorMarker" type="pattern" url="pattern-connect.patt">
+        <a-entity id="stairModel"
                   gltf-model="url(stair.glb)" 
-                  scale="1 1 1"
-                  position="0 0 0"
-                  on-model-error>
-        </a-entity>
+                  scale="12 12 12" 
+                  position="0 0 0" 
+                  architect-filters="color: #DB35CB; opacity: 0.8"></a-entity>
+      </a-marker>
+
+      <a-marker id="dialMarker" type="pattern" url="pattern-texture.patt">
+        <a-torus radius="0.5" radius-tubular="0.02" color="#FFFFFF" rotation="90 0 0" opacity="0.5"></a-torus>
       </a-marker>
 
       <a-entity camera></a-entity>
