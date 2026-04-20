@@ -11,7 +11,6 @@
     const dialMarker = document.querySelector('#marker-texture');
 
     if (dialMarker && dialMarker.object3D.visible && stair) {
-      // 1. Get rotation and normalize to 0-360
       let rotY = THREE.MathUtils.radToDeg(dialMarker.object3D.rotation.y);
       if (rotY < 0) rotY += 360;
 
@@ -21,32 +20,32 @@
           if (node.isMesh) {
             node.material.transparent = true;
 
-            // 2. The Four-Way Switch
+            // --- THE HIGH-CONTRAST SWITCH ---
             if (rotY >= 315 || rotY < 45) {
-              // FRONT: Pink / Concrete
-              node.material.color.set('#DB35CB');
-              node.material.roughness = 0.8;
-              node.material.metalness = 0.1;
-              node.material.opacity = 0.8;
+              // FRONT: White Concrete (STARK WHITE)
+              node.material.color.set('#FFFFFF');
+              node.material.roughness = 1.0; 
+              node.material.metalness = 0.0;
+              node.material.opacity = 0.9;
             } 
             else if (rotY >= 45 && rotY < 135) {
-              // RIGHT: Blue / Steel
-              node.material.color.set('#355EDB');
-              node.material.roughness = 0.2;
-              node.material.metalness = 0.9;
-              node.material.opacity = 0.8;
+              // RIGHT: Dark Chrome (VERY SHINY)
+              node.material.color.set('#111111');
+              node.material.roughness = 0.1;
+              node.material.metalness = 1.0;
+              node.material.opacity = 1.0;
             } 
             else if (rotY >= 135 && rotY < 225) {
-              // BACK: Cyan / Glass
+              // BACK: Cyan Glass (SEE-THROUGH)
               node.material.color.set('#35DBDB');
-              node.material.roughness = 0.1;
-              node.material.metalness = 0.1;
-              node.material.opacity = 0.4; // More transparent
+              node.material.roughness = 0.0;
+              node.material.metalness = 0.0;
+              node.material.opacity = 0.3; // Very translucent
             } 
             else if (rotY >= 225 && rotY < 315) {
-              // LEFT: Gold / Wood
-              node.material.color.set('#DBA935');
-              node.material.roughness = 0.6;
+              // LEFT: Signature Pink
+              node.material.color.set('#DB35CB');
+              node.material.roughness = 0.5;
               node.material.metalness = 0.3;
               node.material.opacity = 0.8;
             }
